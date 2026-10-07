@@ -26,9 +26,11 @@ export default {
 
     try {
       if (request.method === "GET" && url.pathname === "/") {
-        return new Response(UPLOAD_PAGE, {
-          headers: { "content-type": "text/html; charset=UTF-8" }
-        });
+        return env.ASSETS.fetch(request);
+      }
+
+      if (request.method === "GET" && ["/style.css", "/app.js"].includes(url.pathname)) {
+        return env.ASSETS.fetch(request);
       }
 
       if (request.method === "POST" && url.pathname === "/api/upload") {
@@ -70,9 +72,7 @@ async function handleUpload(request, env) {
     }, 415);
   }
 
-  const bytes = new Uint8Array(
-    await file.slice(0, 32).arrayBuffer()
-  );
+  const bytes = new Uint8Array(await file.slice(0, 32).arrayBuffer());
 
   if (!isValidImageSignature(bytes, file.type)) {
     return json({ error: "The uploaded file is not a valid image." }, 415);
@@ -157,20 +157,22 @@ async function handleDelete(request, url, env) {
   await env.IMAGES.delete(object.key);
 
   return new Response(
-    "<!doctype html><meta name='viewport' content='width=device-width,initial-scale=1'><title>Image deleted</title><h1>Image deleted ✓</h1><p>The image was permanently removed.</p>",
+    `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Image deleted - Nazuaf</title>
+<style>${DELETE_STYLES}</style></head>
+<body><main class="delete-card"><div class="success-icon">✓</div><h1>Image deleted</h1><p>The image was permanently removed from Nazuaf.</p><a href="/" class="back-btn">Upload another image</a></main></body></html>`,
     { headers: { "content-type": "text/html; charset=UTF-8" } }
   );
 }
 
 function isValidImageSignature(bytes, type) {
   if (type === "image/jpeg") {
-    return bytes[0] === 0xff &&
-           bytes[1] === 0xd8 &&
-           bytes[2] === 0xff;
+    return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
   }
 
   if (type === "image/png") {
-    const signature = [137,80,78,71,13,10,26,10];
+    const signature = [137, 80, 78, 71, 13, 10, 26, 10];
     return signature.every((value, index) => bytes[index] === value);
   }
 
@@ -238,19 +240,19 @@ function deletePageHtml(id, token, filename) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Delete image - Nazuaf</title>
-<style>
-body{font-family:system-ui;background:#f4f6f8;min-height:100vh;display:grid;place-items:center;margin:0;padding:20px}
-.card{background:#fff;padding:28px;border-radius:18px;box-shadow:0 12px 40px #0001;text-align:center}
-button{background:#d92d20;color:#fff;border:0;padding:12px 20px;border-radius:10px;font-weight:700}
-</style>
+<style>${DELETE_STYLES}</style>
 </head>
 <body>
-<main class="card">
-<h1>Delete image</h1>
-<p>Delete <strong>${escapeHtml(filename)}</strong> permanently?</p>
+<main class="delete-card">
+<div class="delete-icon">!</div>
+<div class="eyebrow">NAZUAF IMAGE HOST</div>
+<h1>Delete image?</h1>
+<p class="filename">${escapeHtml(filename)}</p>
+<p>This image will be permanently removed. This action cannot be undone.</p>
 <form method="post" action="${action}">
-<button type="submit">Delete image</button>
+<button type="submit" class="danger-btn">Delete permanently</button>
 </form>
+<a href="/" class="cancel-link">Cancel</a>
 </main>
 </body>
 </html>`;
@@ -266,83 +268,11 @@ function escapeHtml(value) {
   }[character]));
 }
 
-const UPLOAD_PAGE = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nazuaf Image Upload</title>
-<style>
-body{font-family:system-ui;background:#f4f6f8;min-height:100vh;display:grid;place-items:center;margin:0;padding:20px}
-.card{width:min(520px,100%);background:#fff;padding:28px;border-radius:18px;box-shadow:0 12px 40px #0001}
-input{width:100%;box-sizing:border-box;padding:14px;border:1px dashed #aaa;border-radius:12px;margin:12px 0}
-button{width:100%;padding:13px;border:0;border-radius:10px;background:#111;color:#fff;font-weight:700}
-.result{margin-top:16px;padding:16px;background:#f5f5f5;border-radius:12px;overflow-wrap:anywhere}
-.result a{display:block;margin:9px 0}
-</style>
-</head>
-<body>
-<main class="card">
-<h1>Nazuaf Image Upload</h1>
-<p>JPG, PNG, GIF, WebP and AVIF · Maximum 10 MB</p>
-<form id="uploadForm">
-<input id="fileInput" type="file"
- accept="image/jpeg,image/png,image/gif,image/webp,image/avif" required>
-<button id="uploadButton" type="submit">Upload image</button>
-</form>
-<div id="status"></div>
-</main>
-<script>
-const form = document.getElementById("uploadForm");
-const input = document.getElementById("fileInput");
-const button = document.getElementById("uploadButton");
-const status = document.getElementById("status");
+const DELETE_STYLES = `
+:root{color-scheme:dark;--bg:#070b14;--card:#111827;--border:rgba(148,163,184,.16);--text:#f8fafc;--muted:#94a3b8;--blue:#6ea8fe;--red:#ff5d6c}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:22px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 50% 0,#16284a 0,transparent 42%),linear-gradient(180deg,#080d18,#050810);color:var(--text)}
+.delete-card{width:min(470px,100%);padding:36px 28px;text-align:center;background:linear-gradient(180deg,rgba(19,29,48,.96),rgba(12,18,31,.98));border:1px solid var(--border);border-radius:28px;box-shadow:0 28px 90px rgba(0,0,0,.42)}
+.delete-icon,.success-icon{width:64px;height:64px;margin:0 auto 20px;border-radius:20px;display:grid;place-items:center;font-size:28px;font-weight:900}.delete-icon{background:rgba(255,93,108,.1);border:1px solid rgba(255,93,108,.2);color:var(--red)}.success-icon{background:rgba(57,217,138,.1);border:1px solid rgba(57,217,138,.2);color:#39d98a}
+.eyebrow{font-size:11px;letter-spacing:1.5px;font-weight:800;color:var(--blue);margin-bottom:10px}.delete-card h1{margin:0 0 10px;font-size:30px;letter-spacing:-.8px}.delete-card p{margin:8px 0;color:var(--muted);line-height:1.65}.filename{display:inline-block;max-width:100%;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.05);color:#dbeafe!important;overflow-wrap:anywhere}.danger-btn,.back-btn{display:block;width:100%;margin-top:24px;padding:13px 18px;border-radius:13px;text-decoration:none;font:inherit;font-weight:800;cursor:pointer}.danger-btn{border:1px solid rgba(255,93,108,.25);background:#d83f50;color:#fff}.back-btn{background:#2563eb;color:#fff}.cancel-link{display:inline-block;margin-top:17px;color:#94a3b8;text-decoration:none;font-size:14px}.cancel-link:hover{color:#fff}
+`;
 
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  const file = input.files[0];
-  if (!file) return;
-
-  if (file.size > 10 * 1024 * 1024) {
-    status.textContent = "❌ Maximum file size is 10 MB.";
-    return;
-  }
-
-  button.disabled = true;
-  button.textContent = "Uploading…";
-  status.textContent = "";
-
-  const data = new FormData();
-  data.append("file", file);
-
-  try {
-    const response = await fetch("/api/upload", {
-      method: "POST",
-      body: data
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || "Upload failed.");
-    }
-
-    status.innerHTML =
-      '<div class="result">' +
-      '<strong>✅ Upload successful</strong>' +
-      '<a href="' + result.downloadUrl + '" target="_blank" rel="noopener">🔗 Download image</a>' +
-      '<a href="' + result.deleteUrl + '" target="_blank" rel="noopener">🗑️ Delete image</a>' +
-      '</div>';
-
-    form.reset();
-  } catch (error) {
-    status.textContent = "❌ " + error.message;
-  } finally {
-    button.disabled = false;
-    button.textContent = "Upload image";
-  }
-});
-</script>
-</body>
-</html>`;
