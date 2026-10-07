@@ -1,26 +1,11 @@
 # Nazuaf Image Upload
 
-Cloudflare Workers + R2 image upload service.
+Cloudflare Worker + R2 image uploader.
 
-Features:
-- JPG/JPEG, PNG, GIF, WebP and AVIF
-- Maximum 10 MB
-- Basic image signature validation
-- Random object names
-- Download URL
-- Secret delete URL
-- No database required
+- `src/index.js` — Worker/API logic
+- `public/index.html` — upload page
+- `public/style.css` — UI styling
+- `public/app.js` — frontend interactions
+- `wrangler.jsonc` — Cloudflare configuration
 
-## Cloudflare setup
-
-R2 bucket: `nazuaf-images`
-R2 custom domain: `https://img.nazuaf.com`
-
-The Worker binding is named `IMAGES`.
-
-## Deploy
-
-```bash
-npm install
-npx wrangler deploy
-```
+Deploy with `npm install` then `npx wrangler deploy`.
