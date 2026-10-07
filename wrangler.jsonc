@@ -1,0 +1,8 @@
+{
+  "$schema":"node_modules/wrangler/config-schema.json",
+  "name":"nazuaf-image-upload",
+  "main":"src/index.js",
+  "compatibility_date":"2026-10-08",
+  "r2_buckets":[{"binding":"IMAGES","bucket_name":"nazuaf-images"}],
+  "vars":{"PUBLIC_IMAGE_BASE":"https://img.nazuaf.com"}
+}
