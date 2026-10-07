@@ -1,1 +1,36 @@
-
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d18">
+<title>Nazuaf Image Upload</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="brand"><div class="logo">N</div><span>Nazuaf Image Host</span></div>
+<main class="card">
+<section class="hero">
+<div class="eyebrow">SIMPLE · FAST · PRIVATE</div>
+<h1>Upload your image</h1>
+<p class="subtitle">Upload an image and instantly get a public link plus a private delete link.</p>
+</section>
+<form id="uploadForm">
+<label class="dropzone" id="dropzone" for="fileInput">
+<div class="upload-icon">↑</div>
+<div class="drop-title">Choose an image</div>
+<div class="drop-hint">Click to browse or drag & drop here</div>
+<div class="selected" id="selected">JPG, PNG, GIF, WebP or AVIF · Max 10 MB</div>
+<input id="fileInput" type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/avif" required>
+</label>
+<button class="upload-btn" id="uploadButton" type="submit">Upload image</button>
+</form>
+<div id="status" class="status"></div>
+<div class="limits"><span>Up to 10 MB</span><span>JPG · PNG · GIF · WebP · AVIF</span></div>
+<div class="legal"><strong>Important:</strong> Do not upload images that violate applicable laws, infringe copyright or privacy rights, contain illegal material, or otherwise violate the law. You are responsible for the content you upload.</div>
+</main>
+</div>
+<script src="/app.js" defer></script>
+</body>
+</html>
